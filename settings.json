@@ -6,9 +6,9 @@
   },
 
   "server": {
-    "ip": "waguriismp.aternos.me", 
-    "port": 58031,   
-    "version": "1.12.1"   
+    "ip": "ghana.aternos.me", 
+    "port": 12488,   
+    "version": "1.21.11"   
   },
   
   "position": {
