@@ -79,63 +79,61 @@ function createBot() {
       });
    }
 
-bot.once('spawn', () => {
-  console.log('\x1b[33m[AfkBot] Bot joined the server', '\x1b[0m');
+   bot.once('spawn', () => {
+      console.log('\x1b[33m[AfkBot] Bot joined the server', '\x1b[0m');
 
-  if (config.utils['auto-auth'].enabled) {
-    console.log('[INFO] Started auto-auth module');
+      if (config.utils['auto-auth'].enabled) {
+         console.log('[INFO] Started auto-auth module');
 
-    const password = config.utils['auto-auth'].password;
+         const password = config.utils['auto-auth'].password;
 
-    // Try login first
-    pendingPromise = pendingPromise
-      .then(() => sendLogin(password))
-      .catch(err => {
-        if (err.includes('Not registered')) {
-          console.log('[INFO] Bot not registered, registering now...');
-          return sendRegister(password)
+         pendingPromise = pendingPromise
+            .then(() => sendRegister(password))
             .then(() => sendLogin(password))
             .catch(error => console.error('[ERROR]', error));
-        } else {
-          console.error('[ERROR]', err);
-        }
-      });
-  }
+      }
 
-  // Chat messages module
-  if (config.utils['chat-messages'].enabled) {
-    console.log('[INFO] Started chat-messages module');
-    const messages = config.utils['chat-messages']['messages'];
+      if (config.utils['chat-messages'].enabled) {
+         console.log('[INFO] Started chat-messages module');
+         const messages = config.utils['chat-messages']['messages'];
 
-    if (config.utils['chat-messages'].repeat) {
-      const delay = config.utils['chat-messages'].repeat-delay;
-      let i = 0;
-      setInterval(() => {
-        bot.chat(`${messages[i]}`);
-        i = (i + 1) % messages.length;
-      }, delay * 1000);
-    } else {
-      messages.forEach(msg => bot.chat(msg));
-    }
-  }
+         if (config.utils['chat-messages'].repeat) {
+            const delay = config.utils['chat-messages']['repeat-delay'];
+            let i = 0;
 
-  // Movement module
-  const pos = config.position;
-  if (config.position.enabled) {
-    console.log(
-      `\x1b[32m[Afk Bot] Moving to target (${pos.x}, ${pos.y}, ${pos.z})\x1b[0m`
-    );
-    bot.pathfinder.setMovements(defaultMove);
-    bot.pathfinder.setGoal(new GoalBlock(pos.x, pos.y, pos.z));
-  }
+            let msg_timer = setInterval(() => {
+               bot.chat(`${messages[i]}`);
 
-  // Anti-AFK
-  if (config.utils['anti-afk'].enabled) {
-    bot.setControlState('jump', true);
-    if (config.utils['anti-afk'].sneak) bot.setControlState('sneak', true);
-  }
-});
-;
+               if (i + 1 === messages.length) {
+                  i = 0;
+               } else {
+                  i++;
+               }
+            }, delay * 1000);
+         } else {
+            messages.forEach((msg) => {
+               bot.chat(msg);
+            });
+         }
+      }
+
+      const pos = config.position;
+
+      if (config.position.enabled) {
+         console.log(
+            `\x1b[32m[Afk Bot] Starting to move to target location (${pos.x}, ${pos.y}, ${pos.z})\x1b[0m`
+         );
+         bot.pathfinder.setMovements(defaultMove);
+         bot.pathfinder.setGoal(new GoalBlock(pos.x, pos.y, pos.z));
+      }
+
+      if (config.utils['anti-afk'].enabled) {
+         bot.setControlState('jump', true);
+         if (config.utils['anti-afk'].sneak) {
+            bot.setControlState('sneak', true);
+         }
+      }
+   });
 
    bot.on('goal_reached', () => {
       console.log(
